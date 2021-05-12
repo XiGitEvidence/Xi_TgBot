@@ -19,13 +19,16 @@ def webhook(token):
         abort(404)
     
     data = request.json
-    userid = data['inline_query']['from']['id']
-    content = data['inline_query']['query']
-    inline_query_id = data['inline_query']['id']
-    if process_list.has_key(userid):
-        process_list[userid].terminate()
-    process_list[userid] = Process(target=compute, args=(content,inline_query_id,))
-    process_list[userid].start()
+    try:
+        userid = data['inline_query']['from']['id']
+        content = data['inline_query']['query']
+        inline_query_id = data['inline_query']['id']
+        if process_list.has_key(userid):
+            process_list[userid].terminate()
+        process_list[userid] = Process(target=compute, args=(content,inline_query_id,))
+        process_list[userid].start()
+    except:
+        pass
     return ""
 
 @app.route('/voice/<uuid:task_id>', methods=['GET'])
@@ -69,8 +72,7 @@ def compute(content,inline_query_id):
             }
         ]
     }
-    r = requests.post("https://api.telegram.org/bot{}/answerInlineQuery".format(BOT_TOKEN), json=body)
-    print r.json()
+    requests.post("https://api.telegram.org/bot{}/answerInlineQuery".format(BOT_TOKEN), json=body)
 
 def init_webhook():
     webhook_url = "{}/{}".format(THIS_URL,BOT_TOKEN)
